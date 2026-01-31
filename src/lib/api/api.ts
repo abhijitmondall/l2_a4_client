@@ -1,4 +1,12 @@
-import { User, AuthResponse, Medicine, Category, Order, Review } from "@/types";
+import {
+  User,
+  AuthResponse,
+  Medicine,
+  Category,
+  Order,
+  Review,
+  UserRole,
+} from "@/types";
 
 // API Base URL from environment variable
 const API_BASE_URL =
@@ -48,6 +56,7 @@ const fetchWithAuth = async (
     // const error = await response.json().catch(() => ({
     //   message: "An error occurred",
     // }));
+    console.log(response);
     throw new Error(`Error: ${response.status}`);
   }
 
@@ -69,10 +78,14 @@ export const api = {
      */
     signup: async (data: {
       name: string;
+      phone?: string;
+      photo?: string;
+      gender?: string;
       email: string;
-      password: string;
-      role: "customer" | "seller";
-    }): Promise<AuthResponse> => {
+      address?: string;
+      password?: string;
+      role: string;
+    }): Promise<User> => {
       const response = await fetchWithAuth("/auth/signup", {
         method: "POST",
         body: JSON.stringify(data),
@@ -101,6 +114,22 @@ export const api = {
      */
     me: async (): Promise<User> => {
       const response = await fetchWithAuth("/auth/me");
+      return response.data;
+    },
+
+    updateMe: async (data: Partial<User>): Promise<User> => {
+      const response = await fetchWithAuth("/auth/me", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      return response.data;
+    },
+
+    updateMyPassword: async (data: Partial<User>): Promise<User> => {
+      const response = await fetchWithAuth("/auth/me/change-password", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
       return response.data;
     },
   },

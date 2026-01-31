@@ -7,7 +7,12 @@ export type UserRole = "customer" | "seller" | "admin";
 export interface User {
   id: string;
   name: string;
+  phone?: string;
+  photo?: string;
+  gender?: "Male" | "Female" | "Other";
   email: string;
+  address?: string;
+  password?: string;
   role: UserRole;
   isActive?: boolean;
   isBanned?: boolean;
