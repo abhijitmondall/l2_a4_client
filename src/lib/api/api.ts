@@ -45,10 +45,10 @@ const fetchWithAuth = async (
 
   // Handle error responses
   if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      message: "An error occurred",
-    }));
-    throw new Error(error.message || `HTTP Error: ${response.status}`);
+    // const error = await response.json().catch(() => ({
+    //   message: "An error occurred",
+    // }));
+    throw new Error(`Error: ${response.status}`);
   }
 
   return response.json();
