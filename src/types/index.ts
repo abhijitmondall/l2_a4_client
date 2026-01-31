@@ -42,9 +42,11 @@ export interface Medicine {
   description: string;
   price: number;
   stock: number;
-  category: string;
+  category: {
+    name: string;
+  };
   manufacturer: string;
-  imageUrl?: string;
+  image?: string;
   sellerId: string;
   sellerName?: string;
   isApproved?: boolean;
@@ -93,11 +95,11 @@ export interface CategoryFormData {
 // ============================================
 
 export type OrderStatus =
-  | "PLACED"
-  | "PROCESSING"
-  | "SHIPPED"
-  | "DELIVERED"
-  | "CANCELLED";
+  | "placed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
 
 export interface ShippingAddress {
   street: string;

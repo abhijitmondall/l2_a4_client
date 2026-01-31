@@ -1,8 +1,5 @@
 import { create } from "zustand";
-// import { User, CartItem, Medicine } from "@/types";
-type User = Record<"key", string>;
-type CartItem = string[];
-type Medicine = Record<"key", string>;
+import { User, CartItem, Medicine } from "@/types";
 
 interface AuthState {
   user: User | null;

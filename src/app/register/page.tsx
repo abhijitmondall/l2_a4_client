@@ -70,9 +70,9 @@ export default function RegisterPage() {
 
     try {
       const { confirmPassword, ...registrationData } = formData;
-      const data = await api.auth.signup(registrationData);
-      const { user, token } = data;
-      console.log(data, user, token);
+      const user = await api.auth.signup(registrationData);
+      // const { user } = data;
+      console.log(user);
 
       // login(user, token);
 
@@ -81,12 +81,12 @@ export default function RegisterPage() {
         description: "Welcome to MediStore!",
       });
 
-      // Redirect based on role
-      if (user.role === "seller") {
-        router.push("/seller/dashboard");
-      } else {
-        router.push("/shop");
-      }
+      // // Redirect based on role
+      // if (user.role === "seller") {
+      //   router.push("/seller/dashboard");
+      // } else {
+      //   router.push("/shop");
+      // }
     } catch (error: any) {
       toast({
         title: "Registration failed",

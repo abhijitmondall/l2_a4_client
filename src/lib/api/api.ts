@@ -14,13 +14,20 @@ const fetchWithAuth = async (
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const headers: HeadersInit = {
+  const headers = new Headers({
     "Content-Type": "application/json",
-    ...options.headers,
-  };
+  });
+
+  // merge incoming headers (if any)
+  if (options.headers) {
+    const incoming = new Headers(options.headers);
+    incoming.forEach((value, key) => {
+      headers.set(key, value);
+    });
+  }
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
   const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -351,12 +358,12 @@ export const api = {
       return {
         totalOrders: orderData.length,
         totalRevenue: orderData.reduce(
-          (sum: number, order: any) => sum + order.totalAmount,
+          (sum: number, order: Order) => sum + order.totalAmount,
           0,
         ),
         totalMedicines: 0,
         pendingOrders: orderData.filter(
-          (order: any) => order.status === "PLACED",
+          (order: Order) => order.status === "placed",
         ).length,
         recentOrders: orderData.slice(0, 5),
       };
