@@ -52,6 +52,7 @@ export function MedicineCard({
       toast({
         title: "Added to cart",
         description: `${medicine.name} has been added to your cart.`,
+        variant: "success",
       });
     }
   };
@@ -109,7 +110,7 @@ export function MedicineCard({
 
         <CardFooter className="p-4 pt-0">
           <Button
-            className="w-full"
+            className="w-full cursor-pointer"
             onClick={handleAddToCart}
             disabled={medicine.stock === 0}
           >

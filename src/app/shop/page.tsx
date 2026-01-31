@@ -40,7 +40,7 @@ export default function ShopPage() {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(8);
 
   // Fetch data on mount
   useEffect(() => {
