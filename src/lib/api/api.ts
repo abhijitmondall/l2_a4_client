@@ -653,13 +653,13 @@ export const api = {
 
     categories: {
       /**
-       * Get all categories (Admin only)
-       * @example api.admin.categories.getAll()
+       * Get all categories
+       * @example api.categories.getAll()
        */
-      getAll: async (): Promise<Category[]> => {
-        const response = await fetchWithAuth("/admin/categories");
-        return response.data;
-      },
+      // getAll: async (): Promise<Category[]> => {
+      //   const response = await fetchWithAuth("/medicines/categories");
+      //   return response.data;
+      // },
 
       /**
        * Create a category (Admin only)

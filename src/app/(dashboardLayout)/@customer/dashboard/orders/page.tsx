@@ -22,6 +22,7 @@ import { api } from "@/lib/api/api";
 import { Order, OrderStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/useToast"; // Updated to your specific import
+import Link from "next/link";
 
 export default function PerfectedOrderPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -246,9 +247,11 @@ export default function PerfectedOrderPage() {
                 {/* <button className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-colors flex items-center gap-2">
                   <Download size={14} /> PDF Invoice
                 </button> */}
-                <button className="px-6 py-3 cursor-pointer rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
-                  <HelpCircle size={14} /> Support
-                </button>
+                <Link href={"/contact"}>
+                  <button className="px-6 py-3 cursor-pointer rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+                    <HelpCircle size={14} /> Support
+                  </button>
+                </Link>
               </div>
             </div>
 

@@ -199,7 +199,7 @@ export default function HomePage() {
                   return (
                     <Link
                       key={cat.id}
-                      href={`/shop?category=${cat.id}`}
+                      href={`/medicines?categoryId=${cat.id}`}
                       className="group"
                     >
                       <div className="h-72 relative bg-white rounded-[3rem] p-10 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden border border-slate-100">
