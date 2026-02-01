@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   BarChart3,
   FileText,
+  BoxIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,11 +68,11 @@ export default function DashboardLayout({
       href: "/admin-dashboard/manage-users",
       icon: Users,
     },
-    // {
-    //   name: "Seller Verifications",
-    //   href: "/admin-dashboard/verifications",
-    //   icon: ShieldAlert,
-    // },
+    {
+      name: "Categories",
+      href: "/admin-dashboard/medicines",
+      icon: BoxIcon,
+    },
     {
       name: "All Transactions",
       href: "/admin-dashboard/orders",

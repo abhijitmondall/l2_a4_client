@@ -156,6 +156,23 @@ export const api = {
       return response.data;
     },
 
+    addMedicineCategory: async (name: {
+      name: string;
+    }): Promise<Medicine[]> => {
+      const response = await fetchWithAuth("/medicines/category", {
+        method: "POST",
+        body: JSON.stringify(name),
+      });
+      return response.data;
+    },
+
+    deleteMedicineCategory: async (id: string): Promise<Medicine[]> => {
+      const response = await fetchWithAuth(`/medicines/category/${id}`, {
+        method: "DELETE",
+      });
+      return response.data;
+    },
+
     /**
      * Get a single medicine by ID
      * @example api.medicines.getById('medicine-id-123')
