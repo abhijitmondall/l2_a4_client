@@ -6,11 +6,13 @@ import {
   Order,
   Review,
   UserRole,
+  OrderStatus,
 } from "@/types";
 
 // API Base URL from environment variable
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+// const API_BASE_URL =
+//   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1/";
+const API_BASE_URL = "http://localhost:5000/api/v1";
 
 /**
  * Helper function to make fetch requests with authentication
@@ -258,6 +260,35 @@ export const api = {
   seller: {
     medicines: {
       /**
+       * Get seller medicines with optional filtering
+       * Usage: api.seller.medicines.get({ category: 'Antibiotics' })
+       */
+      get: async (params?: {
+        search?: string;
+        category?: string;
+        minPrice?: number;
+        maxPrice?: number;
+        page?: number;
+        limit?: number;
+      }): Promise<Medicine[]> => {
+        const queryParams = new URLSearchParams();
+        if (params) {
+          Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "") {
+              queryParams.append(key, String(value));
+            }
+          });
+        }
+        const queryString = queryParams.toString();
+        const url = queryString
+          ? `/seller/medicines?${queryString}`
+          : "/seller/medicines";
+
+        const response = await fetchWithAuth(url);
+
+        return response.data || [];
+      },
+      /**
        * Add a new medicine (Seller only)
        * @example api.seller.medicines.add({ name: 'Aspirin', price: 9.99, ... })
        */
@@ -347,10 +378,7 @@ export const api = {
        * Update order status (Seller only)
        * @example api.seller.orders.updateStatus('order-id-123', 'SHIPPED')
        */
-      updateStatus: async (
-        id: string,
-        status: "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
-      ): Promise<Order> => {
+      updateStatus: async (id: string, status: OrderStatus): Promise<Order> => {
         const response = await fetchWithAuth(`/seller/orders/${id}`, {
           method: "PATCH",
           body: JSON.stringify({ status }),
@@ -362,10 +390,11 @@ export const api = {
        * Get orders by status for seller
        * @example api.seller.orders.getByStatus('PLACED')
        */
-      getByStatus: async (
-        status: "PLACED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
-      ): Promise<Order[]> => {
-        const response = await fetchWithAuth(`/seller/orders?status=${status}`);
+      getByStatus: async (status?: OrderStatus | "all"): Promise<Order[]> => {
+        const url = status
+          ? `/seller/orders?status=${status}`
+          : "/seller/orders";
+        const response = await fetchWithAuth(url);
         return response.data;
       },
     },

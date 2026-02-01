@@ -99,13 +99,6 @@ export interface CategoryFormData {
 // ORDER TYPES
 // ============================================
 
-export type OrderStatus =
-  | "placed"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
-
 export interface ShippingAddress {
   street: string;
   city: string;
@@ -124,16 +117,48 @@ export interface OrderItem {
   subtotal?: number;
 }
 
+export type OrderStatus =
+  | "placed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export interface OrderItem {
+  id?: string;
+  orderId: string;
+  medicineId: string;
+  sellerId: string;
+  quantity: number;
+  price: number;
+  medicine?: {
+    id: string;
+    name: string;
+    image?: string;
+    category?: {
+      name: string;
+    };
+  };
+
+  seller?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export interface Order {
   id: string;
   customerId: string;
   customerName?: string;
   customerEmail?: string;
-  items: OrderItem[];
-  totalAmount: number;
-  shippingAddress: ShippingAddress;
   status: OrderStatus;
-  paymentMethod?: "COD" | "CARD" | "WALLET";
+  paymentMethod: "COD";
+  totalAmount: number;
+  shippingName: string;
+  shippingPhone: string;
+  shippingAddr: string;
+  items: OrderItem[];
   createdAt: string;
   updatedAt: string;
 }

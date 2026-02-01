@@ -31,16 +31,16 @@ export default function RootLayout({
         cz-shortcut-listen="true"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster />
+        {/* <Toaster />
         <header>
           <Navbar />
-        </header>
+        </header> */}
 
         <main className="min-h-[60vh]">{children}</main>
 
-        <footer>
+        {/* <footer>
           <Footer />
-        </footer>
+        </footer> */}
       </body>
     </html>
   );

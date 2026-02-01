@@ -81,7 +81,7 @@ export default function LoginPage() {
       });
 
       if (user.role === "seller") {
-        router.push("/seller/dashboard");
+        router.push("/seller-dashboard");
       } else {
         router.push("/shop");
       }
