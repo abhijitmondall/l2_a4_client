@@ -2,15 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ShoppingBag,
+  MapPin,
+  Phone,
+  User,
+  ArrowLeft,
+  ShieldCheck,
+  CreditCard,
+  Loader2,
+  Pill,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCartStore, useAuthStore } from "@/lib/store";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/useToast";
 import api from "@/lib/api/api";
-import { Spinner } from "@/components/ui/spinner";
+import { Badge } from "@/components/ui/badge";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -19,9 +31,9 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
+    name: user?.name || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,18 +45,13 @@ export default function CheckoutPage() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) newErrors.name = "Full name is required";
-
-    if (!formData.address.trim())
-      newErrors.address = "Shipping address is required";
-
+    if (!formData.name.trim()) newErrors.name = "Full name required";
+    if (!formData.address.trim()) newErrors.address = "Valid address required";
     if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
+      newErrors.phone = "Contact number required";
     } else if (!/^\d{11}$/.test(formData.phone.replace(/\D/g, ""))) {
-      newErrors.phone = "Phone number must be 11 digits";
+      newErrors.phone = "Must be exactly 11 digits";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -52,7 +59,6 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setLoading(true);
 
     try {
@@ -60,11 +66,9 @@ export default function CheckoutPage() {
         customerId: user?.id,
         paymentMethod: "COD",
         totalAmount: getTotalPrice(),
-
         shippingName: formData.name,
         shippingPhone: formData.phone,
         shippingAddr: formData.address,
-
         items: items.map((item) => ({
           medicineId: item.medicine.id,
           sellerId: item.medicine.sellerId,
@@ -74,20 +78,18 @@ export default function CheckoutPage() {
       };
 
       await api.orders.create(orderPayload);
-
       clearCart();
-
       toast({
-        title: "Order placed successfully",
-        description: "You can track your order from the orders page.",
+        title: "Order Synchronized",
+        description: "Your prescription is being processed.",
         variant: "success",
       });
-
       router.push("/orders");
     } catch (error: any) {
       toast({
-        title: "Order failed",
-        description: error.response?.data?.message || "Something went wrong",
+        title: "Gateway Error",
+        description:
+          error.response?.data?.message || "Internal transaction failure",
         variant: "destructive",
       });
     } finally {
@@ -103,130 +105,235 @@ export default function CheckoutPage() {
   if (!isAuthenticated || items.length === 0) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
+    <div className="min-h-screen bg-[#F1F5F9] pb-20 font-sans">
+      {/* Header Section */}
+      <div className="bg-white border-b border-slate-200 mb-12">
+        <div className="max-w-6xl mx-auto px-6 py-12 flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-500 p-2 rounded-xl text-white shadow-lg shadow-emerald-500/20">
+                <ShoppingBag size={24} />
+              </div>
+              <h1 className="text-4xl font-black tracking-tighter text-slate-900 uppercase">
+                Secure <span className="text-emerald-500">Checkout</span>
+              </h1>
+            </div>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] ml-1">
+              Review your prescription & finalize delivery
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="rounded-2xl border border-slate-200 text-slate-400 hover:text-slate-900 text-[10px] font-black uppercase tracking-widest px-8 h-14"
+          >
+            <ArrowLeft size={16} className="mr-2" /> Cart
+          </Button>
+        </div>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Shipping */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Shipping Information</CardTitle>
-            </CardHeader>
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* LEFT: Shipping Form */}
+        <div className="lg:col-span-7 space-y-8">
+          <div className="bg-white rounded-[3rem] shadow-sm border border-slate-200/50 overflow-hidden">
+            <div className="p-10 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">
+              <div className="bg-slate-900 p-2 rounded-xl text-emerald-400">
+                <MapPin size={18} />
+              </div>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">
+                Delivery Logistics
+              </h3>
+            </div>
 
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label>Full Name</Label>
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className={errors.name ? "border-red-500" : ""}
-                  />
+            <form onSubmit={handleSubmit} className="p-10 space-y-8">
+              <div className="space-y-6">
+                <div className="grid gap-3">
+                  <Label className="text-[10px] font-black uppercase text-slate-400 ml-1">
+                    Full Legal Name
+                  </Label>
+                  <div className="relative">
+                    <User
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                      size={16}
+                    />
+                    <Input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={`h-14 pl-12 rounded-2xl bg-slate-50 border-none font-bold focus:ring-2 focus:ring-emerald-500/20 ${errors.name ? "ring-2 ring-red-500/20" : ""}`}
+                    />
+                  </div>
                   {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name}</p>
+                    <p className="text-[10px] font-black text-red-500 uppercase ml-1 italic tracking-widest">
+                      {errors.name}
+                    </p>
                   )}
                 </div>
 
-                <div>
-                  <Label>Phone Number</Label>
-                  <Input
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="01XXXXXXXXX"
-                    className={errors.phone ? "border-red-500" : ""}
-                  />
+                <div className="grid gap-3">
+                  <Label className="text-[10px] font-black uppercase text-slate-400 ml-1">
+                    Contact Number (11-Digits)
+                  </Label>
+                  <div className="relative">
+                    <Phone
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                      size={16}
+                    />
+                    <Input
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="01XXXXXXXXX"
+                      className={`h-14 pl-12 rounded-2xl bg-slate-50 border-none font-bold focus:ring-2 focus:ring-emerald-500/20 ${errors.phone ? "ring-2 ring-red-500/20" : ""}`}
+                    />
+                  </div>
                   {errors.phone && (
-                    <p className="text-sm text-red-500">{errors.phone}</p>
+                    <p className="text-[10px] font-black text-red-500 uppercase ml-1 italic tracking-widest">
+                      {errors.phone}
+                    </p>
                   )}
                 </div>
 
-                <div>
-                  <Label>Full Address</Label>
-                  <Input
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="House, Road, Area, City"
-                    className={errors.address ? "border-red-500" : ""}
-                  />
+                <div className="grid gap-3">
+                  <Label className="text-[10px] font-black uppercase text-slate-400 ml-1">
+                    Full Shipping Address
+                  </Label>
+                  <div className="relative">
+                    <MapPin
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                      size={16}
+                    />
+                    <Input
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Street, City, Building Info"
+                      className={`h-14 pl-12 rounded-2xl bg-slate-50 border-none font-bold focus:ring-2 focus:ring-emerald-500/20 ${errors.address ? "ring-2 ring-red-500/20" : ""}`}
+                    />
+                  </div>
                   {errors.address && (
-                    <p className="text-sm text-red-500">{errors.address}</p>
+                    <p className="text-[10px] font-black text-red-500 uppercase ml-1 italic tracking-widest">
+                      {errors.address}
+                    </p>
                   )}
                 </div>
+              </div>
 
-                <div className="flex gap-4 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.back()}
-                    className="flex-1"
-                  >
-                    Back to Cart
-                  </Button>
-
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    {loading ? <Spinner /> : "Place Order"}
-                  </Button>
+              <div className="bg-emerald-50 rounded-3xl p-6 flex items-start gap-4 border border-emerald-100">
+                <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">
+                    Standard Express Delivery
+                  </p>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    Your items will be dispatched within 24 hours of clinical
+                    review.
+                  </p>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-16 rounded-[1.5rem] bg-slate-900 hover:bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-xl shadow-slate-200"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin mr-2" size={20} />
+                ) : (
+                  <ShieldCheck className="mr-2" size={20} />
+                )}
+                Confirm Order & Dispatch
+              </Button>
+            </form>
+          </div>
         </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+        {/* RIGHT: Summary Sidebar */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-[80px] group-hover:bg-emerald-500/30 transition-all duration-700" />
+
+            <div className="relative z-10 space-y-10">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400">
+                Prescription Summary
+              </h3>
+
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10">
                 {items.map((item) => (
                   <div
                     key={item.medicine.id}
-                    className="flex justify-between text-sm"
+                    className="flex justify-between items-center group/item"
                   >
-                    <span className="text-gray-600">
-                      {item.medicine.name} x {item.quantity}
-                    </span>
-                    <span className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-emerald-400 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-colors">
+                        <Pill size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black">
+                          {item.medicine.name}
+                        </p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                          Qty: {item.quantity}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-black text-sm">
                       {formatPrice(item.medicine.price * item.quantity)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(getTotalPrice())}</span>
+              <div className="space-y-5 border-t border-white/10 pt-8">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                    Logistics Fee
+                  </span>
+                  <span className="font-black text-emerald-400 text-xs">
+                    FREE
+                  </span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="text-sm text-green-600">Free</span>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1">
+                      Total Payable
+                    </p>
+                    <p className="text-5xl font-black tracking-tighter">
+                      {formatPrice(getTotalPrice())}
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div className="border-t pt-4 flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span className="text-teal-600">
-                  {formatPrice(getTotalPrice())}
-                </span>
+          {/* Payment Method Details */}
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200/50 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-50 p-2 rounded-xl text-blue-600">
+                <CreditCard size={18} />
               </div>
+              <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900">
+                Payment Protocol
+              </h4>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-black text-slate-900">
+                CASH ON DELIVERY (COD)
+              </p>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
+                Payment is only required upon physical arrival and inspection of
+                items.
+              </p>
+            </div>
+          </div>
 
-              <div className="rounded-lg bg-blue-50 p-4">
-                <p className="text-sm text-blue-900">
-                  <strong>Payment Method:</strong> Cash on Delivery
-                </p>
-                <p className="mt-2 text-xs text-blue-700">
-                  Pay when your order is delivered to your doorstep
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-center gap-2 opacity-30 grayscale">
+            <AlertCircle size={14} />
+            <p className="text-[9px] font-black uppercase tracking-widest">
+              Encrypted Medical Transaction
+            </p>
+          </div>
         </div>
       </div>
     </div>

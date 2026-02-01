@@ -11,6 +11,10 @@ import {
   ChevronRight,
   ChevronLeft,
   LayoutGrid,
+  Pill,
+  Sparkles,
+  ArrowUpDown,
+  Trash2,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -59,8 +63,8 @@ export default function ShopPage() {
         setCategories(c);
       } catch (err) {
         toast({
-          title: "Error",
-          description: "Failed to load shop data",
+          title: "System Error",
+          description: "Failed to sync dispensary data.",
           variant: "destructive",
         });
       } finally {
@@ -134,348 +138,410 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      <div className="max-w-[1400px] mx-auto px-6 pt-12">
-        <div className="mb-10">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-            Dispensary
-          </h1>
-          <p className="text-slate-500 font-medium mt-1">
-            Quality healthcare products delivered to your door.
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* --- SIDEBAR --- */}
-          <aside className="w-full lg:w-80 shrink-0 lg:sticky lg:top-24 lg:mt-3">
-            <Card className="border-slate-200 shadow-sm rounded-[24px] overflow-hidden bg-white">
-              <div className="bg-slate-50/50 border-b border-slate-100 p-6">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm uppercase tracking-widest">
-                  <Filter size={16} className="text-teal-600" /> Filters
-                </h3>
-              </div>
-
-              <CardContent className="p-6 space-y-8">
-                <div className="space-y-3">
-                  <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                    Search
-                  </Label>
-                  <div className="relative group">
-                    <Search
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors"
-                      size={16}
-                    />
-                    <Input
-                      placeholder="Keyword..."
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="pl-10 h-11 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-teal-500/20"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                    Category
-                  </Label>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(v) => {
-                      setSelectedCategory(v);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-full bg-slate-50 border-none h-11 rounded-xl font-semibold text-slate-700">
-                      <div className="flex items-center gap-2">
-                        <LayoutGrid size={14} className="text-teal-600" />
-                        <SelectValue placeholder="All Categories" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                    Price Range ($)
-                  </Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="Min"
-                      type="number"
-                      value={priceRange.min}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, min: e.target.value })
-                      }
-                      className="bg-slate-50 border-none h-10 rounded-lg text-sm px-3"
-                    />
-                    <Input
-                      placeholder="Max"
-                      type="number"
-                      value={priceRange.max}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, max: e.target.value })
-                      }
-                      className="bg-slate-50 border-none h-10 rounded-lg text-sm px-3"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors"
-                  onClick={() => setInStockOnly(!inStockOnly)}
-                >
-                  <Label
-                    htmlFor="stock"
-                    className="text-sm font-bold text-slate-700 cursor-pointer"
-                  >
-                    In Stock Only
-                  </Label>
-                  <Checkbox
-                    id="stock"
-                    checked={inStockOnly}
-                    onCheckedChange={(v) => setInStockOnly(v as boolean)}
-                    className="data-[state=checked]:bg-teal-600 rounded-md"
-                  />
-                </div>
-
-                <Button
-                  onClick={resetFilters}
-                  variant="outline"
-                  className="w-full rounded-xl border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-widest py-6 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
-                >
-                  Clear All Filters
-                </Button>
-              </CardContent>
-            </Card>
-          </aside>
-
-          {/* --- MAIN CONTENT --- */}
-          <main className="flex-1 w-full">
-            {(selectedCategory !== "all" ||
-              searchTerm ||
-              inStockOnly ||
-              priceRange.min ||
-              priceRange.max) && (
-              <div className="flex items-center flex-wrap gap-3 mb-6 animate-in fade-in slide-in-from-top-2">
-                <span className="text-sm font-bold text-slate-400">
-                  Active filters:
-                </span>
-
-                {selectedCategory !== "all" && (
-                  <Badge className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-1.5 rounded-lg flex gap-2 items-center">
-                    Category: {selectedCategory}
-                    <X
-                      size={14}
-                      className="cursor-pointer hover:text-teal-900"
-                      onClick={() => setSelectedCategory("all")}
-                    />
-                  </Badge>
-                )}
-
-                {searchTerm && (
-                  <Badge className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-1.5 rounded-lg flex gap-2 items-center">
-                    Search: {searchTerm}
-                    <X
-                      size={14}
-                      className="cursor-pointer hover:text-teal-900"
-                      onClick={() => setSearchTerm("")}
-                    />
-                  </Badge>
-                )}
-
-                {(priceRange.min || priceRange.max) && (
-                  <Badge className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-1.5 rounded-lg flex gap-2 items-center">
-                    Price: {priceRange.min ? `$${priceRange.min}` : "$0"} —{" "}
-                    {priceRange.max ? `$${priceRange.max}` : "Any"}
-                    <X
-                      size={14}
-                      className="cursor-pointer hover:text-teal-900"
-                      onClick={() => setPriceRange({ min: "", max: "" })}
-                    />
-                  </Badge>
-                )}
-
-                {inStockOnly && (
-                  <Badge className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-1.5 rounded-lg flex gap-2 items-center">
-                    In Stock Only
-                    <X
-                      size={14}
-                      className="cursor-pointer hover:text-teal-900"
-                      onClick={() => setInStockOnly(false)}
-                    />
-                  </Badge>
-                )}
-
-                <button
-                  onClick={resetFilters}
-                  className="text-sm font-bold text-teal-600 hover:text-teal-700 underline underline-offset-4 ml-2"
-                >
-                  Clear all
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-              <div className="text-slate-500 font-medium">
-                Showing
-                <span className="text-slate-900 font-bold">
-                  {filteredMedicines.length > 0 ? indexOfFirstItem + 1 : 0}-
-                  {Math.min(indexOfLastItem, filteredMedicines.length)}
-                </span>
-                of
-                <span className="text-slate-900 font-bold">
-                  {filteredMedicines.length}
-                </span>{" "}
-                medicines
-              </div>
-
+    <div className="min-h-screen bg-[#F1F5F9] pb-20 font-sans">
+      {/* --- HERO HEADER --- */}
+      <div className="bg-white border-b border-slate-200 mb-12">
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <Select
-                  value={sortBy}
-                  onValueChange={(v) => setSortBy(v as SortOption)}
-                >
-                  <SelectTrigger className="w-[180px] bg-white border-slate-200 rounded-xl font-bold h-10 shadow-sm">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="newest">Newest Arrival</SelectItem>
-                    <SelectItem value="price-asc">
-                      Price: Low to High
-                    </SelectItem>
-                    <SelectItem value="price-desc">
-                      Price: High to Low
-                    </SelectItem>
-                    <SelectItem value="name-asc">Name: A-Z</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-slate-100 text-teal-600 shadow-inner" : "text-slate-400"}`}
-                  >
-                    <Grid size={18} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-slate-100 text-teal-600 shadow-inner" : "text-slate-400"}`}
-                  >
-                    <List size={18} />
-                  </button>
+                <div className="bg-slate-900 p-2.5 rounded-2xl text-emerald-400 shadow-xl shadow-slate-200">
+                  <Pill size={28} />
                 </div>
+                <h1 className="text-5xl font-black tracking-tighter text-slate-900 uppercase">
+                  The <span className="text-emerald-500">Dispensary</span>
+                </h1>
+              </div>
+              <p className="text-slate-400 font-bold uppercase text-[11px] tracking-[0.3em] ml-1">
+                Verified Pharmaceutical Archive • Global Standards
+              </p>
+            </div>
+            <div className="bg-emerald-50 px-6 py-4 rounded-[2rem] border border-emerald-100 flex items-center gap-4">
+              <Sparkles className="text-emerald-600" size={20} />
+              <div>
+                <p className="text-[10px] font-black uppercase text-emerald-900 tracking-widest leading-none">
+                  Status
+                </p>
+                <p className="text-xs font-bold text-emerald-700 mt-1">
+                  Pharmacist on Duty
+                </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Product Display */}
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-[380px] bg-slate-100 rounded-[32px] animate-pulse"
-                  />
-                ))}
+      <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row gap-10 items-start">
+        {/* --- SIDEBAR FILTERS --- */}
+        <aside className="w-full lg:w-80 shrink-0 lg:sticky lg:top-10">
+          <div className="bg-white rounded-[3rem] shadow-sm border border-slate-200/50 overflow-hidden">
+            <div className="p-8 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">
+              <div className="bg-slate-900 p-2 rounded-xl text-emerald-400">
+                <Filter size={16} />
               </div>
-            ) : currentItems.length === 0 ? (
-              <div className="text-center py-24 bg-white rounded-[32px] border-2 border-dashed border-slate-100">
-                <PackageSearch
-                  className="mx-auto text-slate-200 mb-4"
-                  size={64}
-                  strokeWidth={1.5}
-                />
-                <h3 className="text-xl font-bold text-slate-900">
-                  No results found
-                </h3>
-                <p className="text-slate-400">
-                  Adjust your search or filters to find what you're looking for.
-                </p>
-                <Button
-                  onClick={resetFilters}
-                  variant="link"
-                  className="text-teal-600 mt-2"
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">
+                Search Parameters
+              </h3>
+            </div>
+
+            <CardContent className="p-8 space-y-10">
+              {/* Search */}
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Keyword
+                </Label>
+                <div className="relative group">
+                  <Search
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors"
+                    size={16}
+                  />
+                  <Input
+                    placeholder="Search medicines..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="pl-12 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Therapeutic Category
+                </Label>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={(v) => {
+                    setSelectedCategory(v);
+                    setCurrentPage(1);
+                  }}
                 >
-                  Clear all filters
+                  <SelectTrigger className="w-full bg-slate-50 border-none h-14 rounded-2xl font-black text-slate-700 focus:ring-2 focus:ring-emerald-500/20">
+                    <div className="flex items-center gap-2">
+                      <LayoutGrid size={16} className="text-emerald-500" />
+                      <SelectValue placeholder="All Categories" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                    <SelectItem value="all" className="font-bold py-3">
+                      All Categories
+                    </SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem
+                        key={cat.id}
+                        value={cat.name}
+                        className="font-bold py-3"
+                      >
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Price */}
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Price Range
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Min"
+                    type="number"
+                    value={priceRange.min}
+                    onChange={(e) =>
+                      setPriceRange({ ...priceRange, min: e.target.value })
+                    }
+                    className="bg-slate-50 border-none h-12 rounded-xl font-bold text-center"
+                  />
+                  <Input
+                    placeholder="Max"
+                    type="number"
+                    value={priceRange.max}
+                    onChange={(e) =>
+                      setPriceRange({ ...priceRange, max: e.target.value })
+                    }
+                    className="bg-slate-50 border-none h-12 rounded-xl font-bold text-center"
+                  />
+                </div>
+              </div>
+
+              {/* Stock Toggle */}
+              <div
+                className="flex items-center justify-between bg-slate-50 p-5 rounded-2xl border border-slate-100 cursor-pointer hover:bg-emerald-50 hover:border-emerald-100 transition-all group"
+                onClick={() => setInStockOnly(!inStockOnly)}
+              >
+                <Label className="text-[11px] font-black text-slate-600 uppercase tracking-widest cursor-pointer group-hover:text-emerald-900 transition-colors">
+                  In Stock Only
+                </Label>
+                <Checkbox
+                  checked={inStockOnly}
+                  onCheckedChange={(v) => setInStockOnly(v as boolean)}
+                  className="data-[state=checked]:bg-emerald-500 rounded-md border-slate-300"
+                />
+              </div>
+
+              <Button
+                onClick={resetFilters}
+                variant="outline"
+                className="w-full rounded-[1.5rem] border-slate-200 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] py-8 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
+              >
+                Reset System Filters
+              </Button>
+            </CardContent>
+          </div>
+        </aside>
+
+        {/* --- PRODUCT GRID --- */}
+        <main className="flex-1 w-full space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] animate-pulse" />
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                    {loading ? (
+                      "Syncing Archive..."
+                    ) : (
+                      <>
+                        Showing{" "}
+                        <span className="text-slate-900">
+                          {filteredMedicines.length === 0
+                            ? 0
+                            : indexOfFirstItem + 1}
+                          {" – "}
+                          {Math.min(indexOfLastItem, filteredMedicines.length)}
+                        </span>{" "}
+                        of{" "}
+                        <span className="text-slate-900">
+                          {filteredMedicines.length}
+                        </span>{" "}
+                        Results
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {/* {(selectedCategory !== "all" ||
+                  searchTerm ||
+                  inStockOnly ||
+                  priceRange.min ||
+                  priceRange.max) && (
+                  <div className="flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 w-1 rounded-full bg-slate-300" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                        Active Parameters:
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {selectedCategory !== "all" && (
+                        <Badge className="bg-white text-slate-900 border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex gap-2 items-center shadow-sm group hover:border-emerald-200 transition-all">
+                          <span className="text-emerald-500">Category:</span>{" "}
+                          {selectedCategory}
+                          <X
+                            size={14}
+                            className="cursor-pointer text-slate-400 hover:text-rose-500"
+                            onClick={() => setSelectedCategory("all")}
+                          />
+                        </Badge>
+                      )}
+
+                      {searchTerm && (
+                        <Badge className="bg-white text-slate-900 border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex gap-2 items-center shadow-sm group hover:border-emerald-200 transition-all">
+                          <span className="text-emerald-500">Keyword:</span>{" "}
+                          {searchTerm}
+                          <X
+                            size={14}
+                            className="cursor-pointer text-slate-400 hover:text-rose-500"
+                            onClick={() => setSearchTerm("")}
+                          />
+                        </Badge>
+                      )}
+
+                      {(priceRange.min || priceRange.max) && (
+                        <Badge className="bg-white text-slate-900 border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex gap-2 items-center shadow-sm group hover:border-emerald-200 transition-all">
+                          <span className="text-emerald-500">Budget:</span>
+                          {priceRange.min ? `$${priceRange.min}` : "$0"}—
+                          {priceRange.max ? `$${priceRange.max}` : "∞"}
+                          <X
+                            size={14}
+                            className="cursor-pointer text-slate-400 hover:text-rose-500"
+                            onClick={() => setPriceRange({ min: "", max: "" })}
+                          />
+                        </Badge>
+                      )}
+
+                      {inStockOnly && (
+                        <Badge className="bg-emerald-500 text-white border-none px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex gap-2 items-center shadow-md">
+                          In Stock
+                          <X
+                            size={14}
+                            className="cursor-pointer text-emerald-100 hover:text-white"
+                            onClick={() => setInStockOnly(false)}
+                          />
+                        </Badge>
+                      )}
+
+                      <button
+                        onClick={resetFilters}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] text-rose-500 hover:bg-rose-50 transition-all group border border-transparent hover:border-rose-100"
+                      >
+                        <Trash2
+                          size={12}
+                          className="group-hover:rotate-12 transition-transform"
+                        />
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                )} */}
+              </div>
+
+              {/* Optional Divider matching the site's clean aesthetic */}
+              <div className="h-px w-full bg-slate-200/60" />
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <Select
+                value={sortBy}
+                onValueChange={(v) => setSortBy(v as SortOption)}
+              >
+                <SelectTrigger className="w-[200px] bg-white border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest h-12 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown size={14} className="text-slate-400" />
+                    <SelectValue placeholder="Sort" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl font-bold">
+                  <SelectItem value="newest">Newest Arrival</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="name-asc">Alphabetical: A-Z</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm shrink-0">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2.5 rounded-xl transition-all ${viewMode === "grid" ? "bg-slate-900 text-emerald-400 shadow-xl" : "text-slate-300"}`}
+                >
+                  <Grid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2.5 rounded-xl transition-all ${viewMode === "list" ? "bg-slate-900 text-emerald-400 shadow-xl" : "text-slate-300"}`}
+                >
+                  <List size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* List/Grid Container */}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[420px] bg-white/50 border-2 border-slate-100 rounded-[3rem] animate-pulse"
+                />
+              ))}
+            </div>
+          ) : currentItems.length === 0 ? (
+            <div className="text-center py-32 bg-white rounded-[4rem] border border-slate-200 border-dashed">
+              <PackageSearch
+                className="mx-auto text-slate-100 mb-6"
+                size={100}
+                strokeWidth={1}
+              />
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+                Archive Empty
+              </h3>
+              <p className="text-slate-400 font-bold text-sm mt-2">
+                No medicines found matching your query.
+              </p>
+              <Button
+                onClick={resetFilters}
+                variant="link"
+                className="text-emerald-500 mt-4 font-black text-xs uppercase tracking-widest underline"
+              >
+                Clear all parameters
+              </Button>
+            </div>
+          ) : (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+                  : "space-y-6"
+              }
+            >
+              {currentItems.map((m) => (
+                <MedicineCard key={m.id} medicine={m} viewMode={viewMode} />
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-20 flex flex-col items-center gap-6">
+              <div className="flex items-center gap-3 bg-white p-3 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="rounded-2xl h-12 w-12 text-slate-400 hover:text-slate-900 transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </Button>
+
+                <div className="flex gap-2">
+                  {getPageNumbers().map((p, i) =>
+                    p === "..." ? (
+                      <span
+                        key={i}
+                        className="px-2 text-slate-300 self-center font-black"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <Button
+                        key={i}
+                        onClick={() => handlePageChange(p as number)}
+                        className={`h-12 w-12 rounded-2xl font-black text-xs transition-all ${
+                          currentPage === p
+                            ? "bg-slate-900 text-emerald-400 shadow-xl shadow-slate-300"
+                            : "bg-transparent text-slate-400 hover:text-slate-900"
+                        }`}
+                      >
+                        {p}
+                      </Button>
+                    ),
+                  )}
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-2xl h-12 w-12 text-slate-400 hover:text-slate-900 transition-colors"
+                >
+                  <ChevronRight size={20} />
                 </Button>
               </div>
-            ) : (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                    : "space-y-4"
-                }
-              >
-                {currentItems.map((m) => (
-                  <MedicineCard key={m.id} medicine={m} viewMode={viewMode} />
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-16 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-1.5 bg-white p-2 rounded-[22px] border border-slate-200 shadow-sm">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="rounded-xl h-10 w-10"
-                  >
-                    <ChevronLeft size={18} />
-                  </Button>
-                  <div className="flex gap-1">
-                    {getPageNumbers().map((p, i) =>
-                      p === "..." ? (
-                        <span
-                          key={i}
-                          className="px-2 text-slate-400 self-center"
-                        >
-                          ...
-                        </span>
-                      ) : (
-                        <Button
-                          key={i}
-                          variant={currentPage === p ? "default" : "ghost"}
-                          onClick={() => handlePageChange(p as number)}
-                          className={`h-10 w-10 rounded-xl font-bold text-sm transition-all ${
-                            currentPage === p
-                              ? "bg-teal-600 text-white shadow-md shadow-teal-100"
-                              : "text-slate-500 hover:bg-slate-50"
-                          }`}
-                        >
-                          {p}
-                        </Button>
-                      ),
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="rounded-xl h-10 w-10"
-                  >
-                    <ChevronRight size={18} />
-                  </Button>
-                </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Page {currentPage} of {totalPages}
-                </p>
-              </div>
-            )}
-          </main>
-        </div>
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">
+                Page {currentPage} — {totalPages}
+              </p>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

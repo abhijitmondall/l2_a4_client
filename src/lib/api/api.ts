@@ -5,7 +5,6 @@ import {
   Category,
   Order,
   Review,
-  UserRole,
   OrderStatus,
 } from "@/types";
 
@@ -78,16 +77,7 @@ export const api = {
      * Register a new user
      * @example api.auth.signup({ name: 'John', email: 'john@example.com', password: '123456', role: 'customer' })
      */
-    signup: async (data: {
-      name: string;
-      phone?: string;
-      photo?: string;
-      gender?: string;
-      email: string;
-      address?: string;
-      password?: string;
-      role: string;
-    }): Promise<User> => {
+    signup: async (data: Partial<User>): Promise<AuthResponse> => {
       const response = await fetchWithAuth("/auth/signup", {
         method: "POST",
         body: JSON.stringify(data),
@@ -234,6 +224,15 @@ export const api = {
     },
 
     /**
+     * Get all orders for authenticated customer
+     * @example api.orders.getAll()
+     */
+    getMyOrders: async (): Promise<Order[]> => {
+      const response = await fetchWithAuth("/orders/me");
+      return response.data;
+    },
+
+    /**
      * Get a specific order by ID
      * @example api.orders.getById('order-id-123')
      */
@@ -246,10 +245,8 @@ export const api = {
      * Get orders by status
      * @example api.orders.getByStatus('SHIPPED')
      */
-    getByStatus: async (
-      status: "PLACED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
-    ): Promise<Order[]> => {
-      const response = await fetchWithAuth(`/orders?status=${status}`);
+    getByStatus: async (status?: OrderStatus): Promise<Order[]> => {
+      const response = await fetchWithAuth(`/orders/me?status=${status}`);
       return response.data;
     },
   },

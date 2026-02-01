@@ -231,7 +231,7 @@ export function Navbar() {
                 </Link>
               )}
               {user?.role === "seller" && (
-                <Link href="/seller/dashboard">
+                <Link href="/seller-dashboard">
                   <Button
                     variant="ghost"
                     size="icon"

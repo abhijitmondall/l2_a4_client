@@ -93,12 +93,13 @@ export default function DashboardLayout({
       href: "/seller-dashboard/add-medicine",
       icon: PlusCircle,
     },
+    { name: "Settings", href: "/seller-dashboard/settings", icon: Settings },
   ];
 
   const customerNav = [
     { name: "My Activity", href: "/dashboard", icon: LayoutDashboard },
     { name: "Order History", href: "/dashboard/orders", icon: History },
-    { name: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
+    { name: "Wishlist", href: "/cart", icon: Heart },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 

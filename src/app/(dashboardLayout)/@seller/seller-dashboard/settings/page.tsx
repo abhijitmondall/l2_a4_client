@@ -1,5 +1,5 @@
 import ProfilePage from "@/components/profile/profile";
 
-export default function Profile() {
+export default function SellerProfile() {
   return <ProfilePage />;
 }

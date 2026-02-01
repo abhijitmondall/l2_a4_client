@@ -108,15 +108,15 @@ export interface ShippingAddress {
   phone: string;
 }
 
-export interface OrderItem {
-  id?: string;
-  medicineId: string;
-  medicineName: string;
-  medicineImage?: string;
-  quantity: number;
-  price: number;
-  subtotal?: number;
-}
+// export interface OrderItem {
+//   id?: string;
+//   medicineId: string;
+//   medicineName: string;
+//   medicineImage?: string;
+//   quantity: number;
+//   price: number;
+//   subtotal?: number;
+// }
 
 export type OrderStatus =
   | "placed"
@@ -136,6 +136,7 @@ export interface OrderItem {
     id: string;
     name: string;
     image?: string;
+    manufacturer?: string;
     category?: {
       name: string;
     };

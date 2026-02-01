@@ -6,11 +6,12 @@ import Link from "next/link";
 import {
   Lock,
   Mail,
-  LogIn,
   Eye,
   EyeOff,
   ChevronRight,
   UserCheck,
+  Pill,
+  ShieldCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,29 +36,17 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {},
   );
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
-
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Min. 6 characters required";
-    }
-
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Invalid format";
+    if (!formData.password) newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -65,31 +54,21 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setLoading(true);
-
     try {
       const response = await api.auth.signin(formData);
       const { user, token } = response;
-
       login(user, token);
-
       toast({
-        title: "Welcome Back!",
-        description: `Logged in as ${user.name}`,
+        title: "Authorized",
+        description: `Welcome back, ${user.name}`,
         variant: "success",
       });
-
-      if (user.role === "seller") {
-        router.push("/seller-dashboard");
-      } else {
-        router.push("/shop");
-      }
+      router.push(user.role === "seller" ? "/seller-dashboard" : "/shop");
     } catch (error: any) {
       toast({
-        title: "Login failed",
-        description:
-          error.response?.data?.message || "Invalid email or password",
+        title: "Access Denied",
+        description: error.response?.data?.message || "Invalid credentials",
         variant: "destructive",
       });
     } finally {
@@ -104,101 +83,115 @@ export default function LoginPage() {
     }
   };
 
-  // Logged in State
   if (user) {
     return (
-      <div className="container mx-auto flex min-h-[70vh] items-center justify-center px-4">
-        <Card className="w-full max-w-sm text-center p-6 border-t-4 border-teal-600 shadow-xl">
-          <div className="flex justify-center mb-4">
-            <div className="bg-teal-50 p-4 rounded-full">
-              <UserCheck className="w-10 h-10 text-teal-600" />
+      <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4">
+        <Card className="w-full max-w-sm border-slate-200/60 shadow-2xl rounded-[2rem] overflow-hidden">
+          <div className="bg-slate-900 p-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20">
+                <UserCheck className="w-10 h-10 text-emerald-500" />
+              </div>
             </div>
+            <h1 className="text-xl font-black text-white uppercase tracking-tighter">
+              Active Session
+            </h1>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              Identified as: {user.name}
+            </p>
           </div>
-          <h1 className="text-2xl font-bold mb-2">Already Signed In</h1>
-          <p className="text-muted-foreground mb-6 text-sm">
-            You are currently logged in as {user.name}.
-          </p>
-          <div className="flex flex-col gap-3">
+          <CardContent className="p-8 flex flex-col gap-3 bg-white">
             <Button
               onClick={() => router.push("/profile")}
-              className="w-full bg-teal-600 hover:bg-teal-700"
+              className="w-full bg-slate-900 cursor-pointer hover:bg-emerald-600 text-white font-black uppercase text-[10px] tracking-[0.2em] h-12 rounded-xl transition-all"
             >
               Go to Profile
             </Button>
             <Button
               variant="outline"
               onClick={() => router.push("/shop")}
-              className="w-full"
+              className="w-full border-slate-200 cursor-pointer text-slate-600 font-black uppercase text-[10px] tracking-[0.2em] h-12 rounded-xl hover:bg-slate-50"
             >
               Return to Shop
             </Button>
-          </div>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-teal-600 transition-all duration-300">
-        <CardHeader className="space-y-2 text-center">
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-slate-50/50">
+      {/* Subtle background tech pattern */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
+        <div
+          className="absolute top-0 left-0 w-full h-full"
+          style={{
+            backgroundImage: "radial-gradient(#10b981 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+      </div>
+
+      <Card className="w-full max-w-md shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)] border-none rounded-[2.5rem] relative z-10 overflow-hidden">
+        <div className="h-2 bg-emerald-500 w-full" />
+
+        <CardHeader className="space-y-4 text-center pt-10 px-8">
           <div className="flex justify-center">
-            <div className="bg-teal-50 p-3 rounded-2xl mb-2">
-              <LogIn className="w-8 h-8 text-teal-600" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 shadow-xl shadow-emerald-500/10">
+              <Pill className="h-7 w-7 text-white rotate-45" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-extrabold tracking-tight">
-            Welcome Back
-          </CardTitle>
-          <CardDescription className="text-base">
-            Access your MediStore account
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-black tracking-tighter uppercase text-slate-900">
+              Medi<span className="text-emerald-500">Access</span>
+            </CardTitle>
+            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Secure Registry Authentication
+            </CardDescription>
+          </div>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-5">
-            {/* Email Field */}
+          <CardContent className="space-y-6 px-8">
             <div className="space-y-2">
               <Label
                 htmlFor="email"
-                className="flex items-center gap-2 font-medium"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1"
               >
-                <Mail className="w-4 h-4 text-teal-600" /> Email
+                Registry Email
               </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="name@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                className={`h-11 transition-all focus:ring-2 focus:ring-teal-500 ${errors.email ? "border-red-500 bg-red-50/30" : "bg-gray-50/50"}`}
-              />
-              {errors.email && (
-                <p className="text-xs font-bold text-red-500 uppercase flex items-center gap-1">
-                  <span>●</span> {errors.email}
-                </p>
-              )}
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@organization.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`h-12 pl-10 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all focus:ring-emerald-500/20 ${errors.email ? "border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,1)]" : ""}`}
+                />
+              </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center ml-1">
                 <Label
                   htmlFor="password"
-                  className="flex items-center gap-2 font-medium"
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
                 >
-                  <Lock className="w-4 h-4 text-teal-600" /> Password
+                  Access Key
                 </Label>
                 <Link
                   href="/forgot-password"
-                  size="sm"
-                  className="text-xs text-teal-600 hover:underline font-medium"
+                  className="text-[9px] font-black uppercase tracking-[0.1em] text-emerald-600 hover:text-emerald-700"
                 >
-                  Forgot password?
+                  Reset Key?
                 </Link>
               </div>
-              <div className="relative group">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   id="password"
                   name="password"
@@ -206,12 +199,12 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`h-11 pr-10 transition-all focus:ring-2 focus:ring-teal-500 ${errors.password ? "border-red-500 bg-red-50/30" : "bg-gray-50/50"}`}
+                  className={`h-12 pl-10 pr-10 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all focus:ring-emerald-500/20 ${errors.password ? "border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,1)]" : ""}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -220,49 +213,52 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-xs font-bold text-red-500 uppercase flex items-center gap-1">
-                  <span>●</span> {errors.password}
-                </p>
-              )}
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col space-y-6 pt-2">
+          <CardFooter className="flex flex-col gap-6 p-8 pt-4">
             <Button
               type="submit"
-              className="w-full h-12 cursor-pointer bg-teal-600 hover:bg-teal-700 text-lg font-bold shadow-md transition-all active:scale-[0.98]"
+              className="w-full h-12 cursor-pointer bg-slate-900 hover:bg-emerald-600 text-white font-black uppercase text-xs tracking-[0.2em] rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-[0.98] group"
               disabled={loading}
             >
               {loading ? (
-                <span className="flex items-center gap-2">
-                  <Spinner className="h-5 w-5 border-white" /> Verifying...
-                </span>
+                <Spinner className="h-4 w-4 border-white" />
               ) : (
                 <span className="flex items-center gap-2">
-                  Sign In <ChevronRight className="w-5 h-5" />
+                  Verify Credentials{" "}
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               )}
             </Button>
 
-            <div className="relative w-full text-center">
+            <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200" />
+                <span className="w-full border-t border-slate-100" />
               </div>
-              <span className="relative bg-white px-4 text-xs text-muted-foreground uppercase font-semibold">
-                New to MediStore?
+              <span className="relative flex justify-center">
+                <span className="bg-white px-4 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
+                  Unauthorized Access Prohibited
+                </span>
               </span>
             </div>
 
             <Link href="/register" className="w-full">
               <Button
-                variant="outline"
+                variant="ghost"
                 type="button"
-                className="w-full h-11 border-teal-600 text-teal-600 hover:bg-teal-50 font-bold"
+                className="w-full h-12 cursor-pointer text-slate-500 hover:text-emerald-600 hover:bg-emerald-50/50 font-black uppercase text-[10px] tracking-[0.2em] rounded-xl transition-all"
               >
-                Create an Account
+                Create New Registry Account
               </Button>
             </Link>
+
+            <div className="flex items-center justify-center gap-2 pt-2 text-slate-300">
+              <ShieldCheck size={14} />
+              <span className="text-[8px] font-black uppercase tracking-widest">
+                End-to-End Encrypted Secure Portal
+              </span>
+            </div>
           </CardFooter>
         </form>
       </Card>
