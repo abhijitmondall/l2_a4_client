@@ -124,7 +124,7 @@ function GlobalSearch() {
             )}
             {results.length > 0 && (
               <Link
-                href={`/shop?search=${query}`}
+                href={`/medicines?search=${query}`}
                 className="flex items-center justify-center gap-2 p-2 mt-2 bg-slate-900 rounded-lg text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
@@ -160,8 +160,9 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Home" },
+    { href: "/categories", label: "Categories" },
     { href: "/shop", label: "Pharmacy" },
-    { href: "/dashboard", label: "Dashboard" },
+    user && { href: "/dashboard", label: "Dashboard" },
   ];
 
   return (
@@ -187,16 +188,16 @@ export function Navbar() {
         <div className="hidden lg:flex items-center gap-12 flex-1">
           <div className="flex items-center gap-8">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link?.href;
               return (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  key={link?.href || "undefined"}
+                  href={link?.href || ""}
                   className={`relative flex flex-col items-center text-xs font-black uppercase tracking-[0.2em] transition-colors hover:text-emerald-600 ${
                     isActive ? "text-emerald-600" : "text-slate-400"
                   }`}
                 >
-                  {link.label}
+                  {link?.label}
                   {/* The Active Dot */}
                   <span
                     className={`absolute -bottom-1.5 left-px h-1 w-1 rounded-full bg-emerald-500 transition-all duration-300 ${
@@ -301,12 +302,12 @@ export function Navbar() {
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  key={link?.href || "undefined"}
+                  href={link?.href || ""}
                   className="text-lg font-black tracking-tight text-slate-900"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  {link?.label}
                 </Link>
               ))}
             </div>
