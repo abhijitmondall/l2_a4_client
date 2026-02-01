@@ -21,13 +21,13 @@ import { Badge } from "@/components/ui/badge";
 
 export default function CartPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const { items, removeFromCart, updateQuantity, getTotalPrice } =
     useCartStore();
 
   useEffect(() => {
-    if (!isAuthenticated) router.push("/login");
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated && !isLoading) router.push("/login");
+  }, [isAuthenticated, router, isLoading]);
 
   if (!isAuthenticated) return null;
 

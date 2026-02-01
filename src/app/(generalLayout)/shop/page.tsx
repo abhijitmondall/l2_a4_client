@@ -15,6 +15,8 @@ import {
   Sparkles,
   ArrowUpDown,
   Trash2,
+  Loader2,
+  Activity,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -444,13 +446,17 @@ export default function ShopPage() {
 
           {/* List/Grid Container */}
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-[420px] bg-white/50 border-2 border-slate-100 rounded-[3rem] animate-pulse"
+            <div className="min-h-[50vh] flex flex-col items-center justify-center bg-[#F1F5F9] gap-4">
+              <div className="relative">
+                <Loader2 className="animate-spin text-emerald-500" size={48} />
+                <Activity
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-400"
+                  size={20}
                 />
-              ))}
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">
+                Initializing Registry...
+              </p>
             </div>
           ) : currentItems.length === 0 ? (
             <div className="text-center py-32 bg-white rounded-[4rem] border border-slate-200 border-dashed">
