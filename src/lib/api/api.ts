@@ -532,9 +532,7 @@ export const api = {
           });
         }
         const queryString = queryParams.toString();
-        const url = queryString
-          ? `/admin/users?${queryString}`
-          : "/admin/users";
+        const url = queryString ? `/users?${queryString}` : "/users";
         const response = await fetchWithAuth(url);
         return response.data;
       },
@@ -544,7 +542,7 @@ export const api = {
        * @example api.admin.users.getById('user-id-123')
        */
       getById: async (id: string): Promise<User> => {
-        const response = await fetchWithAuth(`/admin/users/${id}`);
+        const response = await fetchWithAuth(`/users/${id}`);
         return response.data;
       },
 
@@ -552,13 +550,10 @@ export const api = {
        * Update user status (Admin only)
        * @example api.admin.users.updateStatus('user-id', { isBanned: true })
        */
-      updateStatus: async (
-        id: string,
-        status: { isBanned?: boolean; isActive?: boolean },
-      ): Promise<User> => {
-        const response = await fetchWithAuth(`/admin/users/${id}`, {
-          method: "PATCH",
-          body: JSON.stringify(status),
+      updateStatus: async (id: string, data: Partial<User>): Promise<User> => {
+        const response = await fetchWithAuth(`/users/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(data),
         });
         return response.data;
       },
@@ -568,7 +563,7 @@ export const api = {
        * @example api.admin.users.delete('user-id-123')
        */
       delete: async (id: string): Promise<{ message: string }> => {
-        const response = await fetchWithAuth(`/admin/users/${id}`, {
+        const response = await fetchWithAuth(`/users/${id}`, {
           method: "DELETE",
         });
         return response;
@@ -581,7 +576,7 @@ export const api = {
        * @example api.admin.medicines.getAll()
        */
       getAll: async (): Promise<Medicine[]> => {
-        const response = await fetchWithAuth("/admin/medicines");
+        const response = await fetchWithAuth("/medicines");
         return response.data;
       },
 
@@ -590,7 +585,7 @@ export const api = {
        * @example api.admin.medicines.approve('med-id-123', true)
        */
       approve: async (id: string, approved: boolean): Promise<Medicine> => {
-        const response = await fetchWithAuth(`/admin/medicines/${id}`, {
+        const response = await fetchWithAuth(`/medicines/${id}`, {
           method: "PATCH",
           body: JSON.stringify({ approved }),
         });
@@ -615,12 +610,7 @@ export const api = {
        * @example api.admin.orders.getAll({ status: 'PLACED' })
        */
       getAll: async (params?: {
-        status?:
-          | "PLACED"
-          | "PROCESSING"
-          | "SHIPPED"
-          | "DELIVERED"
-          | "CANCELLED";
+        status?: OrderStatus;
         page?: number;
         limit?: number;
       }): Promise<Order[]> => {
@@ -633,9 +623,7 @@ export const api = {
           });
         }
         const queryString = queryParams.toString();
-        const url = queryString
-          ? `/admin/orders?${queryString}`
-          : "/admin/orders";
+        const url = queryString ? `/orders?${queryString}` : "/orders";
         const response = await fetchWithAuth(url);
         return response.data;
       },
@@ -645,7 +633,7 @@ export const api = {
        * @example api.admin.orders.getById('order-id-123')
        */
       getById: async (id: string): Promise<Order> => {
-        const response = await fetchWithAuth(`/admin/orders/${id}`);
+        const response = await fetchWithAuth(`/orders/${id}`);
         return response.data;
       },
 
@@ -653,11 +641,8 @@ export const api = {
        * Update order status (Admin only)
        * @example api.admin.orders.updateStatus('order-id', 'DELIVERED')
        */
-      updateStatus: async (
-        id: string,
-        status: "PLACED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
-      ): Promise<Order> => {
-        const response = await fetchWithAuth(`/admin/orders/${id}`, {
+      updateStatus: async (id: string, status: OrderStatus): Promise<Order> => {
+        const response = await fetchWithAuth(`/orders/${id}`, {
           method: "PATCH",
           body: JSON.stringify({ status }),
         });

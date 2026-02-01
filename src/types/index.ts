@@ -11,6 +11,7 @@ export interface User {
   photo?: string;
   gender?: "Male" | "Female" | "Other";
   email: string;
+  status?: "banned" | "active";
   address?: string;
   password?: string;
   role: UserRole;
@@ -150,17 +151,53 @@ export interface OrderItem {
 export interface Order {
   id: string;
   customerId: string;
-  customerName?: string;
-  customerEmail?: string;
-  status: OrderStatus;
-  paymentMethod: "COD";
+  status: "placed" | "processing" | "shipped" | "delivered" | "cancelled";
+  paymentMethod: "COD" | string;
   totalAmount: number;
   shippingName: string;
   shippingPhone: string;
   shippingAddr: string;
-  items: OrderItem[];
   createdAt: string;
   updatedAt: string;
+  items: OrderItem[];
+  customer: OrderCustomer;
+  sellerBreakdown: SellerBreakdown[];
+}
+
+export interface OrderItem {
+  id?: string;
+  orderId: string;
+  medicineId: string;
+  sellerId: string;
+  quantity: number;
+  price: number;
+  medicines?: {
+    id: string;
+    name: string;
+    price: number;
+    category: {
+      id: string;
+      name: string;
+    };
+  };
+  seller?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface OrderCustomer {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface SellerBreakdown {
+  sellerId: string;
+  sellerName: string;
+  sellerEmail: string;
+  payable: number;
 }
 
 export interface CreateOrderData {

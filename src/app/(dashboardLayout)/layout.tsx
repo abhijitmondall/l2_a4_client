@@ -62,12 +62,16 @@ export default function DashboardLayout({
 
   const adminNav = [
     { name: "Global Overview", href: "/admin-dashboard", icon: BarChart3 },
-    { name: "Manage Users", href: "/admin-dashboard/users", icon: Users },
     {
-      name: "Seller Verifications",
-      href: "/admin-dashboard/verifications",
-      icon: ShieldAlert,
+      name: "Manage Users",
+      href: "/admin-dashboard/manage-users",
+      icon: Users,
     },
+    // {
+    //   name: "Seller Verifications",
+    //   href: "/admin-dashboard/verifications",
+    //   icon: ShieldAlert,
+    // },
     {
       name: "All Transactions",
       href: "/admin-dashboard/orders",

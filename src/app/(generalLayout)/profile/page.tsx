@@ -57,6 +57,9 @@ export default function ProfilePage() {
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
+    if (user?.role === "admin") {
+      router.push("/admin-dashboard/settings");
+    }
     if (user) {
       setFormData({
         name: user.name || "",
