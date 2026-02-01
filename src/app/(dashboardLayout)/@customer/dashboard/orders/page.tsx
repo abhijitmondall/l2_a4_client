@@ -16,31 +16,67 @@ import {
   Download,
   HelpCircle,
   AlertCircle,
+  XCircle, // New icon for cancel
 } from "lucide-react";
 import { api } from "@/lib/api/api";
-import { Order } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/useToast"; // Updated to your specific import
 
 export default function PerfectedOrderPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const data = await api.orders.getMyOrders();
+      setOrders(data);
+      if (data.length > 0) {
+        // Maintain selection after status update
+        if (selectedOrder) {
+          const updated = data.find((o) => o.id === selectedOrder.id);
+          setSelectedOrder(updated || data[0]);
+        } else {
+          setSelectedOrder(data[0]);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await api.orders.getMyOrders();
-        setOrders(data);
-        if (data.length > 0) setSelectedOrder(data[0]);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
+
+  // New Cancel Functionality
+  const handleCancelOrder = async (orderId: string) => {
+    setCancelling(true);
+    try {
+      await api.orders.updateStatus(orderId, {
+        status: "cancelled" as OrderStatus,
+      });
+      toast({
+        title: "Order Terminated",
+        description: "The medical request has been successfully cancelled.",
+        variant: "success",
+      });
+      await loadData();
+    } catch (err) {
+      toast({
+        title: "Action Failed",
+        description: "Could not cancel the order at this time.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) =>
@@ -52,10 +88,18 @@ export default function PerfectedOrderPage() {
     const hierarchy = ["placed", "processing", "shipped", "delivered"];
     const currentIndex = hierarchy.indexOf(currentStatus.toLowerCase());
     const stepIndex = hierarchy.indexOf(stepId);
+
+    if (currentStatus.toLowerCase() === "cancelled") return "pending";
     if (currentIndex > stepIndex) return "complete";
     if (currentIndex === stepIndex) return "active";
     return "pending";
   };
+
+  // Condition logic for the button
+  const isCancellable = selectedOrder?.status.toLowerCase() === "placed";
+  const isTooLate = ["processing", "shipped", "delivered"].includes(
+    selectedOrder?.status.toLowerCase() || "",
+  );
 
   if (loading)
     return (
@@ -119,7 +163,8 @@ export default function PerfectedOrderPage() {
                   <p
                     className={`text-[10px] font-bold ${selectedOrder?.id === order.id ? "text-slate-300" : "text-slate-500"}`}
                   >
-                    {order.items.length} units • ${order.totalAmount}
+                    {order.items.length} units • ${order.totalAmount} •{" "}
+                    <span className="uppercase text-[8px]">{order.status}</span>
                   </p>
                 </div>
                 <ChevronRight
@@ -146,11 +191,22 @@ export default function PerfectedOrderPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="bg-emerald-500 p-2 rounded-xl text-white">
+                  <div
+                    className={`p-2 rounded-xl text-white ${selectedOrder.status === "cancelled" ? "bg-rose-500" : "bg-emerald-500"}`}
+                  >
                     <ShoppingBag size={24} />
                   </div>
                   <h2 className="text-4xl font-black tracking-tighter text-slate-900">
-                    Order <span className="text-emerald-500">Overview</span>
+                    Order{" "}
+                    <span
+                      className={
+                        selectedOrder.status === "cancelled"
+                          ? "text-rose-500"
+                          : "text-emerald-500"
+                      }
+                    >
+                      Overview
+                    </span>
                   </h2>
                 </div>
                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">
@@ -158,10 +214,39 @@ export default function PerfectedOrderPage() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-colors flex items-center gap-2">
+                {/* --- ENHANCED CANCEL BUTTON WITH TOOLTIP --- */}
+                <div className="relative group/cancel">
+                  <button
+                    disabled={!isCancellable || cancelling}
+                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                    className={`px-6 py-3 cursor-pointer rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 
+                      ${
+                        isCancellable
+                          ? "bg-white border border-rose-200 text-rose-500 hover:bg-rose-50"
+                          : "bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
+                      }`}
+                  >
+                    {cancelling ? (
+                      <Loader2 className="animate-spin" size={14} />
+                    ) : (
+                      <XCircle size={14} />
+                    )}
+                    Cancel Order
+                  </button>
+
+                  {/* Tooltip implementation */}
+                  {!isCancellable && isTooLate && (
+                    <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 text-white text-[9px] font-black rounded-lg opacity-0 group-hover/cancel:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-800">
+                      CANCELLATION LOCKED: PHARMACIST IS PROCESSING
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900" />
+                    </div>
+                  )}
+                </div>
+
+                {/* <button className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-colors flex items-center gap-2">
                   <Download size={14} /> PDF Invoice
-                </button>
-                <button className="px-6 py-3 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+                </button> */}
+                <button className="px-6 py-3 cursor-pointer rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
                   <HelpCircle size={14} /> Support
                 </button>
               </div>
@@ -170,45 +255,62 @@ export default function PerfectedOrderPage() {
             {/* Live Progress Bar Card */}
             <div className="bg-white rounded-[3rem] border border-slate-200/50 p-10 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8">
-                <Badge className="bg-emerald-50 text-emerald-600 border-none px-4 py-2 rounded-xl font-black text-[10px] uppercase">
-                  Est: Feb 05, 2026
+                <Badge
+                  className={`${selectedOrder.status === "cancelled" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"} border-none px-4 py-2 rounded-xl font-black text-[10px] uppercase`}
+                >
+                  {selectedOrder.status === "cancelled"
+                    ? "Status: Terminated"
+                    : "Est: Feb 05, 2026"}
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 relative mt-4">
-                <div className="absolute top-7 left-0 w-full h-[3px] bg-slate-100" />
-                {[
-                  { id: "placed", icon: ClipboardList, label: "Registered" },
-                  { id: "processing", icon: PackageCheck, label: "Pharmacist" },
-                  { id: "shipped", icon: Truck, label: "Dispatch" },
-                  { id: "delivered", icon: CheckCircle2, label: "Arrival" },
-                ].map((step) => {
-                  const status = getStepStatus(step.id, selectedOrder.status);
-                  return (
-                    <div
-                      key={step.id}
-                      className="relative z-10 flex flex-col items-center gap-4"
-                    >
+              {selectedOrder.status === "cancelled" ? (
+                <div className="flex flex-col items-center py-6 text-rose-500 space-y-3">
+                  <XCircle size={48} className="animate-pulse" />
+                  <p className="font-black uppercase tracking-[0.4em] text-xs">
+                    Medical Request Voided
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-4 relative mt-4">
+                  <div className="absolute top-7 left-0 w-full h-[3px] bg-slate-100" />
+                  {[
+                    { id: "placed", icon: ClipboardList, label: "Registered" },
+                    {
+                      id: "processing",
+                      icon: PackageCheck,
+                      label: "Pharmacist",
+                    },
+                    { id: "shipped", icon: Truck, label: "Dispatch" },
+                    { id: "delivered", icon: CheckCircle2, label: "Arrival" },
+                  ].map((step) => {
+                    const status = getStepStatus(step.id, selectedOrder.status);
+                    return (
                       <div
-                        className={`h-14 w-14 rounded-[1.5rem] flex items-center justify-center border-4 border-white shadow-xl transition-all duration-700 ${
-                          status === "complete"
-                            ? "bg-emerald-500 text-white"
-                            : status === "active"
-                              ? "bg-slate-900 text-white scale-125 rotate-3"
-                              : "bg-white text-slate-300 border-slate-100"
-                        }`}
+                        key={step.id}
+                        className="relative z-10 flex flex-col items-center gap-4"
                       >
-                        <step.icon size={22} />
+                        <div
+                          className={`h-14 w-14 rounded-[1.5rem] flex items-center justify-center border-4 border-white shadow-xl transition-all duration-700 ${
+                            status === "complete"
+                              ? "bg-emerald-500 text-white"
+                              : status === "active"
+                                ? "bg-slate-900 text-white scale-125 rotate-3"
+                                : "bg-white text-slate-300 border-slate-100"
+                          }`}
+                        >
+                          <step.icon size={22} />
+                        </div>
+                        <span
+                          className={`text-[10px] font-black uppercase tracking-widest ${status === "pending" ? "text-slate-300" : "text-slate-900"}`}
+                        >
+                          {step.label}
+                        </span>
                       </div>
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-widest ${status === "pending" ? "text-slate-300" : "text-slate-900"}`}
-                      >
-                        {step.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -297,10 +399,16 @@ export default function PerfectedOrderPage() {
 
               {/* Financial Sidebar */}
               <div className="lg:col-span-5 space-y-8">
-                <div className="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                  <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-[80px] group-hover:bg-emerald-500/30 transition-all duration-700" />
+                <div
+                  className={`rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group transition-all duration-500 ${selectedOrder.status === "cancelled" ? "bg-slate-800" : "bg-slate-900"}`}
+                >
+                  <div
+                    className={`absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[80px] group-hover:bg-emerald-500/30 transition-all duration-700 ${selectedOrder.status === "cancelled" ? "bg-rose-500/10" : "bg-emerald-500/20"}`}
+                  />
                   <div className="relative z-10 space-y-10">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400">
+                    <h3
+                      className={`text-[11px] font-black uppercase tracking-[0.3em] ${selectedOrder.status === "cancelled" ? "text-rose-400" : "text-emerald-400"}`}
+                    >
                       Financial Summary
                     </h3>
 
@@ -317,24 +425,36 @@ export default function PerfectedOrderPage() {
                         <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
                           Medical Tax
                         </span>
-                        <span className="font-black text-lg text-emerald-400">
-                          Included
+                        <span
+                          className={`font-black text-lg ${selectedOrder.status === "cancelled" ? "text-rose-400" : "text-emerald-400"}`}
+                        >
+                          {selectedOrder.status === "cancelled"
+                            ? "Reversed"
+                            : "Included"}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
                           Shipping
                         </span>
-                        <span className="font-black text-lg text-emerald-400">
-                          Free
+                        <span
+                          className={`font-black text-lg ${selectedOrder.status === "cancelled" ? "text-rose-400" : "text-emerald-400"}`}
+                        >
+                          {selectedOrder.status === "cancelled"
+                            ? "Voided"
+                            : "Free"}
                         </span>
                       </div>
                     </div>
 
                     <div className="pt-8 border-t border-white/10 flex justify-between items-end">
                       <div>
-                        <p className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1">
-                          Total Amount
+                        <p
+                          className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedOrder.status === "cancelled" ? "text-rose-500" : "text-emerald-500"}`}
+                        >
+                          {selectedOrder.status === "cancelled"
+                            ? "Refundable Total"
+                            : "Total Amount"}
                         </p>
                         <p className="text-5xl font-black tracking-tighter">
                           ${selectedOrder.totalAmount}
@@ -351,8 +471,9 @@ export default function PerfectedOrderPage() {
                       Pharmacist Note
                     </h4>
                     <p className="text-xs text-amber-700 font-medium leading-relaxed">
-                      Please ensure someone is available at the delivery address
-                      to sign for sensitive medication.
+                      {selectedOrder.status === "cancelled"
+                        ? "This medical request has been terminated. Transaction logs are preserved for your records."
+                        : "Please ensure someone is available at the delivery address to sign for sensitive medication."}
                     </p>
                   </div>
                 </div>

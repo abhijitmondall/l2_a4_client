@@ -203,6 +203,22 @@ export const api = {
     },
 
     /**
+     * update order status by id
+     * @example api.orders.updateStatus(id, {status})
+     */
+    updateStatus: async (
+      id: string,
+      status: { status: OrderStatus },
+    ): Promise<Order> => {
+      const response = await fetchWithAuth(`/orders/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(status),
+      });
+
+      return response.data;
+    },
+
+    /**
      * Get all orders for authenticated customer
      * @example api.orders.getAll()
      */
