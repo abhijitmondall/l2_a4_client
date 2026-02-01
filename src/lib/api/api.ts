@@ -194,19 +194,7 @@ export const api = {
      * Create a new order
      * @example api.orders.create({ items: [...], shippingAddress: {...} })
      */
-    create: async (orderData: {
-      items: Array<{
-        medicineId: string;
-        quantity: number;
-      }>;
-      shippingAddress: {
-        street: string;
-        city: string;
-        state: string;
-        zipCode: string;
-        phone: string;
-      };
-    }): Promise<Order> => {
+    create: async (orderData: Order): Promise<Order> => {
       const response = await fetchWithAuth("/orders", {
         method: "POST",
         body: JSON.stringify(orderData),

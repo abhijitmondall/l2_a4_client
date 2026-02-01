@@ -23,10 +23,11 @@ import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/useToast";
 import api from "@/lib/api/api";
 import { Badge } from "@/components/ui/badge";
+import { Order } from "@/types";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isLoading } = useAuthStore();
   const { items, getTotalPrice, clearCart } = useCartStore();
 
   const [loading, setLoading] = useState(false);
@@ -39,9 +40,9 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!isAuthenticated) router.push("/login");
-    if (items.length === 0) router.push("/cart");
-  }, [isAuthenticated, items, router]);
+    if (!isAuthenticated && !isLoading) router.push("/login");
+    // if (items.length === 0) router.push("/cart");
+  }, [isAuthenticated, items, router, isLoading]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -77,14 +78,14 @@ export default function CheckoutPage() {
         })),
       };
 
-      await api.orders.create(orderPayload);
+      await api.orders.create(orderPayload as Order);
       clearCart();
       toast({
         title: "Order Synchronized",
         description: "Your prescription is being processed.",
         variant: "success",
       });
-      router.push("/orders");
+      router.push("/dashboard/orders");
     } catch (error: any) {
       toast({
         title: "Gateway Error",
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
           <Button
             variant="ghost"
             onClick={() => router.back()}
-            className="rounded-2xl border border-slate-200 text-slate-400 hover:text-slate-900 text-[10px] font-black uppercase tracking-widest px-8 h-14"
+            className="rounded-2xl border cursor-pointer border-slate-200 text-slate-400 hover:text-slate-900 text-[10px] font-black uppercase tracking-widest px-8 h-14"
           >
             <ArrowLeft size={16} className="mr-2" /> Cart
           </Button>
@@ -235,7 +236,7 @@ export default function CheckoutPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-16 rounded-[1.5rem] bg-slate-900 hover:bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-xl shadow-slate-200"
+                className="w-full h-16 rounded-[1.5rem] cursor-pointer bg-slate-900 hover:bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-xl shadow-slate-200"
               >
                 {loading ? (
                   <Loader2 className="animate-spin mr-2" size={20} />
