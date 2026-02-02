@@ -11,7 +11,7 @@ import {
 // API Base URL from environment variable
 // const API_BASE_URL =
 //   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1/";
-const API_BASE_URL = "http://localhost:5000/api/v1";
+const API_BASE_URL = "https://medistore-server-api.vercel.app/api/v1";
 
 /**
  * Helper function to make fetch requests with authentication
@@ -315,7 +315,7 @@ export const api = {
         description: string;
         price: number;
         stock: number;
-        category: string;
+        category?: string;
         manufacturer: string;
         imageUrl?: string;
       }): Promise<Medicine> => {

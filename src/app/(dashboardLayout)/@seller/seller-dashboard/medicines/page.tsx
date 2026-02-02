@@ -102,6 +102,7 @@ export default function InventoryPage() {
       setIsEditOpen(false);
       fetchInventory();
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Update Failed",
@@ -129,9 +130,11 @@ export default function InventoryPage() {
       toast({
         title: "Item Deleted",
         description: `${deleteItem.name} removed from inventory.`,
+        variant: "success",
       });
       setIsDeleteOpen(false);
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Delete Failed",

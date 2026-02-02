@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Link as LinkIcon,
   Save,
-  DollarSign,
   Info,
   Loader2,
   CheckCircle2,
@@ -61,7 +60,7 @@ export default function AddMedicinePage() {
         const res = await api.medicines.getCategories();
         setCategories(res || []);
       } catch (error) {
-        console.error("Failed to load categories");
+        console.error("Failed to load categories", error);
       }
     };
     fetchCategories();
@@ -87,6 +86,7 @@ export default function AddMedicinePage() {
       });
       router.push("/seller-dashboard/medicines");
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Error",
