@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Medistore — Client (Next.js + TypeScript)
 
-## Getting Started
+This is the Next.js frontend for the Medistore project. It is a TypeScript + Next.js application that communicates with the backend API (Server_Side) to render the shop, authentication flows, cart, orders, and seller/admin dashboards.
 
-First, run the development server:
+## Technologies used
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Radix UI components
+
+## Live URLs
+
+- Frontend: (not deployed) — replace with your frontend URL if deployed
+- Backend API: (not deployed) — replace with your backend API URL if deployed
+
+## Features
+
+- Browse medicines: categories, search, filters, pagination
+- Authentication: signup, signin, JWT-based sessions
+- Cart & checkout flow
+- Orders: create/view (customer), manage (seller)
+- Seller dashboard: add/update medicines, view orders
+- Admin dashboard: manage users, medicines, orders
+- Reviews & ratings
+- Responsive UI and accessible components
+
+## Prerequisites
+
+- Node.js (recommended 18+)
+- npm (or yarn / pnpm)
+
+## Quick start (local development)
+
+1. Install dependencies:
+
+```bash
+cd client-side
+npm install
+```
+
+2. Configure environment variables:
+
+Create a file named `.env.local` in the `client-side` folder. At minimum set the API base URL used by the client:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+```
+
+Note: the client currently contains a hardcoded `API_BASE_URL` in [src/lib/api/api.ts](client-side/src/lib/api/api.ts#L1). To point the app to a local backend either set `NEXT_PUBLIC_API_URL` as above and uncomment the environment lookup in that file, or update `API_BASE_URL` directly.
+
+3. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Build & Production
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Build and run:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+The production server runs on whatever port you expose (default Next is 3000).
 
-To learn more about Next.js, take a look at the following resources:
+## Linting
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run the linter with:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+```
 
-## Deploy on Vercel
+## Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- API calls are centralized in [src/lib/api/api.ts](client-side/src/lib/api/api.ts#L1). If you get CORS or connection errors, verify that the backend is running and that `NEXT_PUBLIC_API_URL` points to the correct base path (e.g. `http://localhost:5000/api/v1`).
+- Auth tokens are stored in `localStorage` by the client and attached as `Authorization: Bearer <token>` to requests.
+- To run the client against the included Server_Side locally:
+  1.  Start the server (see Server_Side README).
+  2.  Set `NEXT_PUBLIC_API_URL` to `http://localhost:5000/api/v1` and restart the client.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploying
+
+You can deploy this app to Vercel, Netlify, or any platform that supports Next.js. For Vercel deploys, ensure your environment variables (especially API URL) are configured in your project settings.
+
+---
+
+See the server README for backend setup: [Server_Side/README.md](Server_Side/README.md)
